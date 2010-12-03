@@ -62,15 +62,18 @@ Api.prototype = (->
         if method in validMethods
             return callbackCache[method]
     
+    socket = null
+    
     # ### Public
     return {
         # Helper method to create the websocket used for the API
         createSocket: (host, port, secure) ->
-            if @socket?
-                return @socket
+            # No point creating something we already have!
+            if socket?
+                return socket
             
-            @socket = new io.Socket(host, {port: port, secure: secure})
-            @socket.on 'message', (msg) ->
+            socket = new io.Socket(host, {port: port, secure: secure})
+            socket.on 'message', (msg) ->
                 cache = getMethodCache msg.method
                 callback = cache[msg.sequenceId]
 
@@ -104,10 +107,10 @@ Api.prototype = (->
                 obj: if obj? then obj else null,
             }
             
-            if not @socket.connected
-                @socket.connect()
+            if not socket.connected
+                socket.connect()
             
-            @socket.send data
+            socket.send data
         
         # ## REST
         delete: (path, callback) ->
