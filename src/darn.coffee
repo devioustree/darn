@@ -7,19 +7,34 @@ isInt = (possibleNumber) ->
 isFunction = (possibleFunction) ->
     typeof possibleFunction == 'function'
 
+isBool = (possibleBoolean) ->
+    typeof possibleBoolean == 'boolean'
+
 # ## Constructor
-Api = (@host, @port = 80) ->
-    if isInt(@host)
-        @port = @host
-        @host = null
+Api = (host, port = 80, secure = false) ->
+    # Hopefully I'm not the only person in the world who hates javascript's shitty
+    # parameter handling
+    if isInt(host) and isBool(port)
+        secure = port
+        port = host
+        host = null
+    else if isInt(host)
+        port = host
+        host = null
+    else if isBool(host)
+        secure = host
+        host = null
     
-    if not @host?
+    # If they haven't entered a hostname then try and pluck one from the browser
+    if not host?
         try
-            @host = location.hostname
+            host = location.hostname
+        # But of course, nowadays javascript is all grown up and rebalious and
+        # has broken free from the shackles of the browser
         catch err
             throw "You must specify a hostname"
     
-    @createSocket(@host, @port)
+    @createSocket(host, port, secure)
     return this
     
 # ## Meat and Veg
@@ -50,11 +65,11 @@ Api.prototype = (->
     # ### Public
     return {
         # Helper method to create the websocket used for the API
-        createSocket: (host, port) ->
+        createSocket: (host, port, secure) ->
             if @socket?
                 return @socket
             
-            @socket = new io.Socket(host, {port: port})
+            @socket = new io.Socket(host, {port: port, secure: secure})
             @socket.on 'message', (msg) ->
                 cache = getMethodCache msg.method
                 callback = cache[msg.sequenceId]
