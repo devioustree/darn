@@ -4,6 +4,9 @@
 isInt = (possibleNumber) ->
     parseInt(possibleNumber) == possibleNumber
 
+isFunction = (possibleFunction) ->
+    typeof possibleFunction == 'function'
+
 # ## Constructor
 Api = (@host, @port = 80) ->
     if isInt(@host)
@@ -16,7 +19,7 @@ Api = (@host, @port = 80) ->
         catch err
             throw "You must specify a hostname"
     
-    #@socket = createSocket(@host, @port)
+    @createSocket(@host, @port)
     return this
     
 # ## Meat and Veg
@@ -26,9 +29,6 @@ Api.prototype = (->
     # ### Private
     # Defines the four restful methods. Mainly used for verification
     validMethods = ['DELETE', 'GET', 'POST', 'PUT']
-    
-    # Holds a private reference to the socket
-    _socket = null
     
     # Because websockets is asynchronous we need to provide a way to get at the
     # data it returns. Callbacks ftw! We use `callbackSequence` and `callbackCache`
@@ -47,52 +47,68 @@ Api.prototype = (->
         if method in validMethods
             return callbackCache[method]
     
-    # Helper method to create the websocket used for the API
-    createSocket = (host, port) ->
-        socket = new io.Socket(host, {port: port})
-        socket.on 'message', (msg) ->
-            cache = getMethodCache msg.method
-            callback = cache[msg.sequenceId]
-
-            # Let's do some tidying up :)
-            cache[msg.sequenceId] = null
-            delete cache[msg.sequenceId]
-
-            callback null, msg.obj
-
-        return socket
-    
     # ### Public
     return {
-        socket: () ->
-            if not _socket?
-                _socket = createSocket(@host, @port)
-            return _socket
+        # Helper method to create the websocket used for the API
+        createSocket: (host, port) ->
+            if @socket?
+                return @socket
+            
+            @socket = new io.Socket(host, {port: port})
+            @socket.on 'message', (msg) ->
+                cache = getMethodCache msg.method
+                callback = cache[msg.sequenceId]
+
+                # Let's do some tidying up :)
+                cache[msg.sequenceId] = null
+                delete cache[msg.sequenceId]
+
+                callback null, msg.obj
         
         # Helpful method for sending generic requests
-        request: (method, data, callback) ->
+        request: (method, path, obj, callback) ->
+            # `obj` is an optional argument as GET and DELETE requests don't need
+            # to send an object 
+            if isFunction(obj)
+                callback = obj
+                obj = null
+            
+            # Callbacks are also optional but if one has been specified then we
+            # need to cache it so it gets called when a response is returned
             if callback? and getMethodCache(method)?
                 cacheId = createCacheId()
                 cache = getMethodCache method
                 cache[cacheId] = callback
-                
-                data.sequenceId = cacheId
+            
+            # Setup the default data needed by our protocol
+            data = {
+                method: method,
+                timestamp: (new Date()).valueOf(),
+                path: path,
+                sequenceId: if cacheId? then cacheId else null,
+                obj: if obj? then obj else null,
+            }
             
             if not @socket.connected
                 @socket.connect()
             
-            data.method = method
-            data.timestamp = (new Date()).valueOf()
-            
             @socket.send data
+        
+        # ## REST
+        delete: (path, callback) ->
+            this.request('DELETE', path, callback)
         
         get: (path, callback) ->
             if not callback?
                 throw "You must have a callback so you can store the returned data"
             
-            this.request('GET', {
-                path: path,
-            }, callback)
+            this.request('GET', path, callback)
+        
+        post: (path, obj, callback) ->
+            this.request('POST', path, obj, callback)
+        
+        put: (path, obj, callback) ->
+            this.request('PUT', path, obj, callback)
     }
 )()
     
