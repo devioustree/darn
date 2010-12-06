@@ -6,7 +6,7 @@
         "socket.io",
         "websockets"
     ],
-    "version": "0.0.2",
+    "version": "0.0.3",
     "author": "Tom Drummond <tom@devioustree.co.uk>",
     "repository": {
         "type": "git",
@@ -20,4 +20,7 @@
         "lib" : "./lib"
     },
     "main": "./lib/darn",
+    "dependencies": {
+        "socket.io": ">=0.6.1",
+    },
 }

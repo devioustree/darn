@@ -1,5 +1,10 @@
 # Darn is a tool to create a RESTful api on top of websockets.
 
+try
+    io = require('socket.io')
+catch err
+    io = this.io
+
 # ## Helper functions
 isInt = (possibleNumber) ->
     parseInt(possibleNumber) == possibleNumber
