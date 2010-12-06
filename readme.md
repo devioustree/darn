@@ -1,11 +1,11 @@
 ## darn
 
-`darn` is a very thin REST wrapper around websockets. It defines a very small
+`darn` is a very thin RESTful wrapper around websockets. It defines a small
 client-side API. The server-side stuff is up to you
 
 ## Example Usage
 
-    var api = new Api('hostname', 8000)
+    var api = new Darn('hostname', 8000)
     
     var post = 'This is my new post. It is teh awsum'
     var postId = null
