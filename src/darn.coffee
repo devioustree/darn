@@ -29,7 +29,7 @@ Darn = (host, port = 80, secure = false) ->
     if not host?
         try
             host = location.hostname
-        # But of course, nowadays javascript is all grown up and rebalious and
+        # But of course, nowadays javascript is all grown up and rebellious and
         # has broken free from the shackles of the browser
         catch err
             throw "You must specify a hostname"
