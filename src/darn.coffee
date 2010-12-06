@@ -84,6 +84,8 @@ Darn.prototype = (->
                 delete cache[msg.sequenceId]
 
                 callback null, msg.obj
+            
+            socket.connect()
         
         # Helpful method for sending generic requests
         request: (method, path, obj, callback) ->
