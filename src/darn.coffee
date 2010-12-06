@@ -40,7 +40,7 @@ Darn = (host, port = 80, secure = false) ->
 # ## Meat and Veg
 # This is where the work is all done. We define a closure so we can have private
 # methods and variables available
-Api.prototype = (->
+Darn.prototype = (->
     # ### Private
     # Defines the four restful methods. Mainly used for verification
     validMethods = ['DELETE', 'GET', 'POST', 'PUT']
