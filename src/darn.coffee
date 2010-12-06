@@ -11,7 +11,7 @@ isBool = (possibleBoolean) ->
     typeof possibleBoolean == 'boolean'
 
 # ## Constructor
-Api = (host, port = 80, secure = false) ->
+Darn = (host, port = 80, secure = false) ->
     # Hopefully I'm not the only person in the world who hates javascript's shitty
     # parameter handling
     if isInt(host) and isBool(port)
@@ -130,4 +130,4 @@ Api.prototype = (->
     }
 )()
     
-this.Api = Api
+this.Darn = Darn
